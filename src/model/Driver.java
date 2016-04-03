@@ -28,7 +28,7 @@ public class Driver
 		while((message = sc.nextLine()) != null ) {
 			//con.readGlobal();
 			//con.sendMessage(message);
-			con.writeGlobal(Transaction.ISO_SERIALIZABLE, "Palawan", 1, 20);
+			con.writeGlobal(Transaction.ISO_SERIALIZABLE, "Marinduque", 1, 20);
 		}
 		 
 	}

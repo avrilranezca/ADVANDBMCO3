@@ -95,8 +95,8 @@ public class ClientReceive implements Runnable{
 				    	String text = message.getText();
 				    	System.out.println("Command: UPDATE " + text);
 				    	String updateInfo[] = text.split(",");
-				    	int id = Integer.parseInt(updateInfo[0].substring(2));
-				    	int value = Integer.parseInt(updateInfo[1].substring(5));
+				    	int id = Integer.parseInt(updateInfo[0].substring(3));
+				    	int value = Integer.parseInt(updateInfo[1].substring(6));
 				    	
 				    	Transaction2 transaction = new Transaction2();
 				    	transaction.setIsolationLevel(Transaction.ISO_SERIALIZABLE);
@@ -107,7 +107,7 @@ public class ClientReceive implements Runnable{
 				    	String targetLocation = message.getSender();
 				    	sender = message.getOriginalSender();
 				    	
-				    	c.sendMessage(new Message(c.getType(), "WRITERESPONSE", sender, "OK"));	
+				    	c.sendMessage(new Message(c.getType(), "UPDATERESPONSE", sender, "OK"));	
 				    }
 				    else if("UPDATERESPONSE".equals(command)) {
 				    	System.out.println("I got an UPDATE RESPONSE");

@@ -442,38 +442,55 @@ public class Controller
 						}
 					}
 					else if(targetLocation.equals("Marinduque")) {
+						int ready = 0;
+						Socket s1=null, s2 = null;
 						try {
-							s = new Socket(central.getIpadd(), Port);
-							s.setSoTimeout(2000);
-							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
-							pw.writeObject(item);
-							pw.flush();
-							s.close();
+							s1 = new Socket(central.getIpadd(), Port);
+							s1.setSoTimeout(2000);
+							
+							ready++;
 							
 							System.out.println("Updating data of Marinduque in Central from Palawan, sent update to central");
 							
-							try {
-								s = new Socket(marin.getIpadd(), Port);
-								s.setSoTimeout(2000);
-								ObjectOutputStream pw1 = new ObjectOutputStream(s.getOutputStream());
-								pw1.writeObject(item);
-								pw1.flush();
-								s.close();
-								
-								System.out.println("Updating data of Marinduque in Marinduque from Palawan, sent update to Marinduque");
-							}
-							catch(Exception e) {
-								System.out.println("Updating data of Marinduque in Marinduque from Palawan failed");
-								e.printStackTrace();
-								NEIGHBOR_WRITE_SUCCESSFUL = false;
-								WRITE_RESULT = true;
-							}
 						}
 						catch(Exception e) {
 							System.out.println("Updating data of Marinduque in Central from Palawan failed");
 							e.printStackTrace();
 							NEIGHBOR_WRITE_SUCCESSFUL = false;
 							WRITE_RESULT = true;
+						}
+						
+						try {
+							s2 = new Socket(marin.getIpadd(), Port);
+							s2.setSoTimeout(2000);
+							
+							ready++;
+							
+							System.out.println("Updating data of Marinduque in Marinduque from Palawan, sent update to Marinduque");
+						}
+						catch(Exception e) {
+							System.out.println("Updating data of Marinduque in Marinduque from Palawan failed");
+							e.printStackTrace();
+							NEIGHBOR_WRITE_SUCCESSFUL = false;
+							WRITE_RESULT = true;
+						}
+						
+						if(ready == 2) {
+							ObjectOutputStream pw;
+							try {
+								pw = new ObjectOutputStream(s1.getOutputStream());
+								pw.writeObject(item);
+								pw.flush();
+								s1.close();
+								
+								ObjectOutputStream pw1 = new ObjectOutputStream(s2.getOutputStream());
+								pw1.writeObject(item);
+								pw1.flush();
+								s2.close();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 					}
 				}
@@ -497,38 +514,56 @@ public class Controller
 						}
 					}
 					else if(targetLocation.equals("Palawan")) {
+						Socket s1 = null, s2 = null;
+						int ready = 0;
+						
 						try {
-							s = new Socket(central.getIpadd(), Port);
-							s.setSoTimeout(2000);
-							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
-							pw.writeObject(item);
-							pw.flush();
-							s.close();
+							s1 = new Socket(central.getIpadd(), Port);
+							s1.setSoTimeout(2000);
+							
+							ready++;
 							
 							System.out.println("Updating data of Palawan in Central from Marinduque, sent update to central");
 							
-							try {
-								s = new Socket(palawan.getIpadd(), Port);
-								s.setSoTimeout(2000);
-								ObjectOutputStream pw1 = new ObjectOutputStream(s.getOutputStream());
-								pw1.writeObject(item);
-								pw1.flush();
-								s.close();
-								
-								System.out.println("Updating data of Palawan in Palawan from Marinduque, sent update to Marinduque");
-							}
-							catch(Exception e) {
-								System.out.println("Updating data of Palawan in Palawan from Marinduque failed");
-								e.printStackTrace();
-								NEIGHBOR_WRITE_SUCCESSFUL = false;
-								WRITE_RESULT = true;
-							}
+							
 						}
 						catch(Exception e) {
 							System.out.println("Updating data of Palawan in Central from Marinduque failed");
 							e.printStackTrace();
 							NEIGHBOR_WRITE_SUCCESSFUL = false;
 							WRITE_RESULT = true;
+						}
+						
+						try {
+							s2 = new Socket(palawan.getIpadd(), Port);
+							s2.setSoTimeout(2000);
+							
+							ready++;
+							
+							System.out.println("Updating data of Palawan in Palawan from Marinduque, sent update to Marinduque");
+						}
+						catch(Exception e) {
+							System.out.println("Updating data of Palawan in Palawan from Marinduque failed");
+							e.printStackTrace();
+							NEIGHBOR_WRITE_SUCCESSFUL = false;
+							WRITE_RESULT = true;
+						}
+						
+						if(ready == 2) {
+							try {
+								ObjectOutputStream pw = new ObjectOutputStream(s1.getOutputStream());
+								pw.writeObject(item);
+								pw.flush();
+								s1.close();
+								
+								ObjectOutputStream pw1 = new ObjectOutputStream(s2.getOutputStream());
+								pw1.writeObject(item);
+								pw1.flush();
+								s2.close();
+							}
+							catch(Exception e) {
+								e.printStackTrace();
+							}
 						}
 					}
 				}
