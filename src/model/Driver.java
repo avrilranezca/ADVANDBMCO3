@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class Driver
 {
-	final static int PORT = 2345;
+	final static int PORT = 1234;
 	/*public static void main(String[] args)
 	{
 		MainGUI mainGUI = new MainGUI(new Controller());

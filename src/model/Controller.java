@@ -21,7 +21,7 @@ public class Controller
 	Node central;
 	Node marin;
 	Node palawan;
-	final static int Port = 2345;
+	final static int Port = 1234;
 	
 	private static volatile boolean READ_RESULT = false;
 	private static volatile boolean IS_FROM_CENTRAL = false;
@@ -93,9 +93,10 @@ public class Controller
 
 	public void readGlobal() {
 		if(type.equals("Palawan")) {
-			new Thread (new SEND("<Palawan>(READ)"));
+			new Thread(new SEND("<Palawan>(READ)")).start();
+			System.out.println("After sending <Palawan>(READ)");
 			
-			while(!READ_RESULT);
+			while(!READ_RESULT){};
 			
 			if(IS_FROM_CENTRAL) {
 				System.out.println("I should get everything from here");
@@ -111,7 +112,7 @@ public class Controller
 			
 		}
 		else if(type.equals("Marinduque")) {
-			new Thread (new SEND("<Marinduque>(READ)"));
+			new Thread (new SEND("<Marinduque>(READ)")).start();
 			while(!READ_RESULT);
 
 			if(IS_FROM_CENTRAL) {
@@ -129,7 +130,7 @@ public class Controller
 	}
 	
 	public void sendMessage(String message) {
-		new Thread(new SEND(message));
+		new Thread(new SEND(message)).start();
 	}
 	
 	// Send POST notification
@@ -140,6 +141,7 @@ public class Controller
 		
 		public SEND(String message) {
 			this.message = message;
+			System.out.println("Received from readglobal message");
 		}
 		
 		@Override

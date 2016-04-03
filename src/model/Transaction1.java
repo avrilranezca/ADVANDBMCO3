@@ -137,11 +137,11 @@ public class Transaction1 implements Transaction{
 			
 			ResultSet rs = ps.executeQuery();
 			
-			while(rs.next()) {
+			/*while(rs.next()) {
 				System.out.println(number + " id: " + rs.getInt(1) + ", memno: " + rs.getInt(2) + ", age_yr: " + rs.getInt(3));
 			}
 			
-			rs.first();
+			rs.first();*/
 			
 			return rs;
 			
