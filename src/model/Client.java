@@ -13,6 +13,7 @@ public class Client {
 		  	this.c = c;
 		  	RECEIVE(X); // pinasa na yung socket :)
 	 }
+	 
 
 	 //receive
 	 // process the message received
@@ -67,7 +68,7 @@ public class Client {
             	
             		System.out.println(toSend);
             		
-            		c.SEND(toSend);
+            		c.sendMessage(message);
 			    	
 			    	
 			    	//c.SEND("<Palawan>(READRESPONSE)[{}]");

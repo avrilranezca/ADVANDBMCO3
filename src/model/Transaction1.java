@@ -141,6 +141,8 @@ public class Transaction1 implements Transaction{
 				System.out.println(number + " id: " + rs.getInt(1) + ", memno: " + rs.getInt(2) + ", age_yr: " + rs.getInt(3));
 			}
 			
+			rs.first();
+			
 			return rs;
 			
 		} catch (SQLException e) {

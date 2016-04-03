@@ -93,7 +93,7 @@ public class Controller
 
 	public void readGlobal() {
 		if(type.equals("Palawan")) {
-			SEND("<Palawan>(READ)");
+			new Thread (new SEND("<Palawan>(READ)"));
 			
 			while(!READ_RESULT);
 			
@@ -111,7 +111,7 @@ public class Controller
 			
 		}
 		else if(type.equals("Marinduque")) {
-			SEND("<Marinduque>(READ)");
+			new Thread (new SEND("<Marinduque>(READ)"));
 			while(!READ_RESULT);
 
 			if(IS_FROM_CENTRAL) {
@@ -128,206 +128,238 @@ public class Controller
 		}
 	}
 	
+	public void sendMessage(String message) {
+		new Thread(new SEND(message));
+	}
+	
 	// Send POST notification
 	//write message, process to whom to send the message
-	public void SEND(String message)
+	public class SEND implements Runnable
 	{
-		System.out.println("SEND (start)");
-		Socket s;
+		private String message;
 		
-		/*try {
-			s = new Socket(central.getIpadd(), Port);
-			PrintWriter pw = new PrintWriter(s.getOutputStream());
-			pw.println(message);
-			pw.flush();
-			s.close();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		
-		
-		String sender = message.substring(message.indexOf('<') + 1, message.indexOf('>'));
-		String command = message.substring(message.indexOf('(') + 1, message.indexOf(')'));
-		
-		if("READ".equals(command)) {
-			if("Palawan".equals(sender)) {
-				try{
-					s = new Socket(central.getIpadd(), Port);
-					PrintWriter pw = new PrintWriter(s.getOutputStream());
-					pw.println(message);
-					pw.flush();
-					s.close();
-				}
-				catch(Exception e) {
-					e.printStackTrace();
-					System.out.println("Read request from palawan to central failed");
-					
-					try {
-						s = new Socket(marin.getIpadd(), Port);
-						PrintWriter pw = new PrintWriter(s.getOutputStream());
-						pw.println(message);
-						pw.flush();
-						s.close();
-						System.out.println("I sent to marinduque");
-					} catch(Exception e1) {
-						e1.printStackTrace();
-						System.out.println("Read request from palawan to marinduque failed");
-					}
-				}
-			}
-			else if ("Marinduque".equals(sender)) {
-				try{
-					s = new Socket(central.getIpadd(), Port);
-					PrintWriter pw = new PrintWriter(s.getOutputStream());
-					pw.println(message);
-					pw.flush();
-					s.close();
-				}
-				catch(Exception e) {
-					e.printStackTrace();
-					System.out.println("Read request from marinduque to central failed");
-					
-					try {
-						s = new Socket(palawan.getIpadd(), Port);
-						PrintWriter pw = new PrintWriter(s.getOutputStream());
-						pw.println(message);
-						pw.flush();
-						s.close();
-					} catch(Exception e1) {
-						e1.printStackTrace();
-						System.out.println("Read request from marinduque to palawan failed");
-					}
-				}
-			}
-		}
-		else if("READRESPONSE".equals(command)) {
-			String originalSender = message.substring(message.indexOf('\"') + 1, message.lastIndexOf('\"'));
-			if("Palawan".equals(sender)) {
-				if("Marinduque".equals(originalSender)) {
-					try {
-						s = new Socket(marin.getIpadd(), Port);
-						PrintWriter pw = new PrintWriter(s.getOutputStream());
-						pw.println(message);
-						pw.flush();
-						s.close();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-					}
-				}
-				else if("Central".equals(originalSender)) {
-					System.out.println("I doubt central will be the original sender of a read request");
-				}
-			}
-			else if("Central".equals(sender)) {
-				if("Palawan".equals(originalSender)) {
-					try {
-						s = new Socket(palawan.getIpadd(), Port);
-						PrintWriter pw = new PrintWriter(s.getOutputStream());
-						pw.println(message);
-						pw.flush();
-						s.close();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-					}
-				}
-				else if("Marinduque".equals(originalSender)) {
-					try {
-						s = new Socket(marin.getIpadd(), Port);
-						PrintWriter pw = new PrintWriter(s.getOutputStream());
-						pw.println(message);
-						pw.flush();
-						s.close();
-					}
-					catch(Exception e) {
-						e.printStackTrace();
-					}
-				}
-				
-			}
-			else if("Marinuque".equals(sender)) {
-				if("Palawan".equals(originalSender)) {
-					
-				}
-				else if("Central".equals(originalSender)) {
-					System.out.println("I doubt central will be the original sender of a read request");
-				}
-			}
+		public SEND(String message) {
+			this.message = message;
 		}
 		
-		
-		/*if("Palawan".equals(sender)) {
-			try{
+		@Override
+		public void run() {
+			System.out.println("SEND (start)");
+			Socket s;
+			
+			/*try {
 				s = new Socket(central.getIpadd(), Port);
 				PrintWriter pw = new PrintWriter(s.getOutputStream());
 				pw.println(message);
 				pw.flush();
 				s.close();
-			}
-			catch(Exception e) {
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-		}
-		else if("Central".equals(sender)) {
-			try{
-				s = new Socket(palawan.getIpadd(), Port);
-				PrintWriter pw = new PrintWriter(s.getOutputStream());
-				pw.println(message);
-				pw.flush();
-				s.close();
-			}
-			catch(Exception e) {
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}*/
+			
+			
+			String sender = message.substring(message.indexOf('<') + 1, message.indexOf('>'));
+			String command = message.substring(message.indexOf('(') + 1, message.indexOf(')'));
+			
+			if("READ".equals(command)) {
+				if("Palawan".equals(sender)) {
+					try{
+						s = new Socket(central.getIpadd(), Port);
+						s.setSoTimeout(2000);
+						PrintWriter pw = new PrintWriter(s.getOutputStream());
+						pw.println(message);
+						pw.flush();
+						s.close();
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+						System.out.println("Read request from palawan to central failed");
+						
+						try {
+							s = new Socket(marin.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							PrintWriter pw = new PrintWriter(s.getOutputStream());
+							pw.println(message);
+							pw.flush();
+							s.close();
+							System.out.println("I sent to marinduque");
+						} catch(Exception e1) {
+							e1.printStackTrace();
+							System.out.println("Read request from palawan to marinduque failed");
+						}
+					}
+				}
+				else if ("Marinduque".equals(sender)) {
+					try{
+						s = new Socket(central.getIpadd(), Port);
+						s.setSoTimeout(2000);
+						PrintWriter pw = new PrintWriter(s.getOutputStream());
+						pw.println(message);
+						pw.flush();
+						s.close();
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+						System.out.println("Read request from marinduque to central failed");
+						
+						try {
+							s = new Socket(palawan.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							PrintWriter pw = new PrintWriter(s.getOutputStream());
+							pw.println(message);
+							pw.flush();
+							s.close();
+						} catch(Exception e1) {
+							e1.printStackTrace();
+							System.out.println("Read request from marinduque to palawan failed");
+						}
+					}
+				}
 			}
-		}*/
-		
-		/*try {
-			SOCK = new Socket(central.getIpadd(), Port);					// Open socket
-			PrintWriter OUT = new PrintWriter(SOCK.getOutputStream());
-			OUT.println("\"READ\" " + message + "\0"); 					// Send message
-			OUT.flush();		
-			SOCK.close(); 												// Close socket	
+			else if("READRESPONSE".equals(command)) {
+				String originalSender = message.substring(message.indexOf('\"') + 1, message.lastIndexOf('\"'));
+				if("Palawan".equals(sender)) {
+					if("Marinduque".equals(originalSender)) {
+						try {
+							s = new Socket(marin.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							PrintWriter pw = new PrintWriter(s.getOutputStream());
+							pw.println(message);
+							pw.flush();
+							s.close();
+						}
+						catch(Exception e) {
+							e.printStackTrace();
+						}
+					}
+					else if("Central".equals(originalSender)) {
+						System.out.println("I doubt central will be the original sender of a read request");
+					}
+				}
+				else if("Central".equals(sender)) {
+					if("Palawan".equals(originalSender)) {
+						try {
+							s = new Socket(palawan.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							PrintWriter pw = new PrintWriter(s.getOutputStream());
+							pw.println(message);
+							pw.flush();
+							s.close();
+						}
+						catch(Exception e) {
+							e.printStackTrace();
+						}
+					}
+					else if("Marinduque".equals(originalSender)) {
+						try {
+							s = new Socket(marin.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							PrintWriter pw = new PrintWriter(s.getOutputStream());
+							pw.println(message);
+							pw.flush();
+							s.close();
+						}
+						catch(Exception e) {
+							e.printStackTrace();
+						}
+					}
+					
+				}
+				else if("Marinuque".equals(sender)) {
+					if("Palawan".equals(originalSender)) {
+						try {
+							s = new Socket(palawan.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							PrintWriter pw = new PrintWriter(s.getOutputStream());
+							pw.println(message);
+							pw.flush();
+							s.close();
+						}
+						catch(Exception e) {
+							e.printStackTrace();
+						}
+					}
+					else if("Central".equals(originalSender)) {
+						System.out.println("I doubt central will be the original sender of a read request");
+					}
+				}
+			}
+			
+			
+			/*if("Palawan".equals(sender)) {
+				try{
+					s = new Socket(central.getIpadd(), Port);
+					PrintWriter pw = new PrintWriter(s.getOutputStream());
+					pw.println(message);
+					pw.flush();
+					s.close();
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+			else if("Central".equals(sender)) {
+				try{
+					s = new Socket(palawan.getIpadd(), Port);
+					PrintWriter pw = new PrintWriter(s.getOutputStream());
+					pw.println(message);
+					pw.flush();
+					s.close();
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
+			}*/
+			
+			/*try {
+				SOCK = new Socket(central.getIpadd(), Port);					// Open socket
+				PrintWriter OUT = new PrintWriter(SOCK.getOutputStream());
+				OUT.println("\"READ\" " + message + "\0"); 					// Send message
+				OUT.flush();		
+				SOCK.close(); 												// Close socket	
 
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			if(type.equals("Marinduque")) {
-				try {
-					SOCK = new Socket(palawan.getIpadd(), Port);
-					PrintWriter OUT = new PrintWriter(SOCK.getOutputStream());
-					OUT.println("\"READ\" " + message + "\0"); 					// Send message
-					OUT.flush();		
-					SOCK.close(); 
-				} catch (UnknownHostException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			} else {
-				try {
-					SOCK = new Socket(marin.getIpadd(), Port);
-					PrintWriter OUT = new PrintWriter(SOCK.getOutputStream());
-					OUT.println("\"READ\" " + message + "\0"); 					// Send message
-					OUT.flush();		
-					SOCK.close(); 
-				} catch (UnknownHostException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				
 			}
-		} */
-		System.out.println("SEND (end)");
+			catch (Exception e) {
+				e.printStackTrace();
+				if(type.equals("Marinduque")) {
+					try {
+						SOCK = new Socket(palawan.getIpadd(), Port);
+						PrintWriter OUT = new PrintWriter(SOCK.getOutputStream());
+						OUT.println("\"READ\" " + message + "\0"); 					// Send message
+						OUT.flush();		
+						SOCK.close(); 
+					} catch (UnknownHostException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				} else {
+					try {
+						SOCK = new Socket(marin.getIpadd(), Port);
+						PrintWriter OUT = new PrintWriter(SOCK.getOutputStream());
+						OUT.println("\"READ\" " + message + "\0"); 					// Send message
+						OUT.flush();		
+						SOCK.close(); 
+					} catch (UnknownHostException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
+				}
+			} */
+			System.out.println("SEND (end)");
+		}
+		
+		
 	 }
 	
 		public void readResponseAction(String message) {
