@@ -17,6 +17,8 @@ import java.util.concurrent.CyclicBarrier;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import com.sun.rowset.CachedRowSetImpl;
+
 public class Controller
 {
 	// database manager?
@@ -212,7 +214,7 @@ public class Controller
 						s = new Socket(central.getIpadd(), Port);
 						s.setSoTimeout(2000);
 						ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
-						pw.writeObject(pw);
+						pw.writeObject(item);
 						pw.flush();
 						s.close();
 					}
@@ -224,7 +226,7 @@ public class Controller
 							s = new Socket(marin.getIpadd(), Port);
 							s.setSoTimeout(2000);
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
-							pw.writeObject(pw);
+							pw.writeObject(item);
 							pw.flush();
 							s.close();
 							System.out.println("I sent to marinduque");
@@ -239,7 +241,7 @@ public class Controller
 						s = new Socket(central.getIpadd(), Port);
 						s.setSoTimeout(2000);
 						ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
-						pw.writeObject(pw);
+						pw.writeObject(item);
 						pw.flush();
 						s.close();
 					}
@@ -251,7 +253,7 @@ public class Controller
 							s = new Socket(palawan.getIpadd(), Port);
 							s.setSoTimeout(2000);
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
-							pw.writeObject(pw);
+							pw.writeObject(item);
 							pw.flush();
 							s.close();
 						} catch(Exception e1) {
@@ -269,7 +271,7 @@ public class Controller
 							s = new Socket(marin.getIpadd(), Port);
 							s.setSoTimeout(2000);
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
-							pw.writeObject(pw);
+							pw.writeObject(item);
 							pw.flush();
 							s.close();
 						}
@@ -287,7 +289,7 @@ public class Controller
 							s = new Socket(palawan.getIpadd(), Port);
 							s.setSoTimeout(2000);
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
-							pw.writeObject(pw);
+							pw.writeObject(item);
 							pw.flush();
 							s.close();
 						}
@@ -300,7 +302,7 @@ public class Controller
 							s = new Socket(marin.getIpadd(), Port);
 							s.setSoTimeout(2000);
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
-							pw.writeObject(pw);
+							pw.writeObject(item);
 							pw.flush();
 							s.close();
 						}
@@ -316,7 +318,7 @@ public class Controller
 							s = new Socket(palawan.getIpadd(), Port);
 							s.setSoTimeout(2000);
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
-							pw.writeObject(pw);
+							pw.writeObject(item);
 							pw.flush();
 							s.close();
 						}
@@ -407,7 +409,7 @@ public class Controller
 			
 			String sender = message.getSender();
 			String command = message.getCommand();
-			ResultSet data = message.getData();
+			CachedRowSetImpl data = message.getData();
 			
 			System.out.println("In readresponseaction");
 			

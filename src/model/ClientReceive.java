@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.sql.ResultSet;
 import java.util.Arrays;
 
+import com.sun.rowset.CachedRowSetImpl;
+
 public class ClientReceive implements Runnable{
 	 private Controller c;
 	 private Socket S;
@@ -73,7 +75,10 @@ public class ClientReceive implements Runnable{
 	            	
 	            		System.out.println(toSend);*/
 	            		
-	            		c.sendMessage(new Message(c.getType(), "READRESPONSE", sender, rs));
+	            		CachedRowSetImpl crs = new CachedRowSetImpl();
+	            		crs.populate(rs);
+	            		
+	            		c.sendMessage(new Message(c.getType(), "READRESPONSE", sender, crs));
 				    	
 				    	
 				    	//c.SEND("<Palawan>(READRESPONSE)[{}]");
