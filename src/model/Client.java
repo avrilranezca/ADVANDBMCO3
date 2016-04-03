@@ -7,7 +7,9 @@ import java.sql.ResultSet;
 import java.util.Arrays;
 
 public class Client {
+	
 	 private Controller c;
+	 
 	 public Client(Controller c, Socket X)
 	 {
 		  	this.c = c;

@@ -1,7 +1,6 @@
 package model;
 
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.ResultSet;
@@ -23,7 +22,7 @@ public class ClientReceive implements Runnable{
 				try{
 					System.out.println("Client receive (start)");
 					
-					/*InputStream input = S.getInputStream();
+					InputStream input = S.getInputStream();
 								
 					//System.out.println("Client receive (read bytes)");
 					
@@ -47,13 +46,10 @@ public class ClientReceive implements Runnable{
 				    //input command is the received string
 				    String message = new String(scannedbytes, "UTF-8");
 				    
-				    System.out.println("I received: " + message);*/
-					
-					ObjectInputStream ois = new ObjectInputStream(S.getInputStream());
-					Message message = (Message) ois.readObject();
+				    System.out.println("I received: " + message);
 				    
-				    String sender = message.getSender();
-					String command = message.getCommand();
+				    String sender = message.substring(message.indexOf('<') + 1, message.indexOf('>'));
+					String command = message.substring(message.indexOf('(') + 1, message.indexOf(')'));
 				    
 				    if("READ".equals(command)) {
 
@@ -62,7 +58,7 @@ public class ClientReceive implements Runnable{
 	            		ResultSet rs = transaction.transactionBody(0, 0, 0, false);
 	            		transaction.endTransaction(Transaction.COMMIT);
 	            		
-	            		/*String toSend = "<" + c.getType() + ">" + "(READRESPONSE)\"" + sender + "\"[";
+	            		String toSend = "<" + c.getType() + ">" + "(READRESPONSE)\"" + sender + "\"[";
 	            		
 	            		while(rs.next()) {
 	            			toSend += "{" + rs.getInt(1) + "," + rs.getInt(2) + "," + rs.getInt(3) + "}|";
@@ -71,9 +67,9 @@ public class ClientReceive implements Runnable{
 	            		toSend = toSend.substring(0, toSend.length()-1);
 	            		toSend += "]";
 	            	
-	            		System.out.println(toSend);*/
+	            		System.out.println(toSend);
 	            		
-	            		c.sendMessage(new Message(c.getType(), "READRESPONSE", sender, rs));
+	            		c.sendMessage(toSend);
 				    	
 				    	
 				    	//c.SEND("<Palawan>(READRESPONSE)[{}]");

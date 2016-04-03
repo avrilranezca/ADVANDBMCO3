@@ -17,6 +17,11 @@ public class Driver
 		Controller con = new Controller("Palawan");
 		Server SER = new Server(con, PORT);
 		Thread X = new Thread(SER);
+		Viewer v = new Viewer();
+		
+		v.setCon(con);
+		con.setViewer(v);
+		
 		X.start();	// Runs the server process
 		
 		con.add("192.168.1.144", "Central");
