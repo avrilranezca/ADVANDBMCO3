@@ -26,8 +26,9 @@ public class Driver
 		Scanner sc = new Scanner(System.in);
 		String message;
 		while((message = sc.nextLine()) != null ) {
-			con.readGlobal();
+			//con.readGlobal();
 			//con.sendMessage(message);
+			con.writeGlobal(Transaction.ISO_SERIALIZABLE, "Palawan", 1, 10);
 		}
 		 
 	}

@@ -29,7 +29,9 @@ public class Controller
 	final static int Port = 1234;
 	
 	private static volatile boolean READ_RESULT = false;
+	private static volatile boolean WRITE_RESULT = false;
 	private static volatile boolean IS_FROM_CENTRAL = false;
+	private static volatile boolean NEIGHBOR_WRITE_SUCCESSFUL = false;
 	private ResultSet moreData;
 	
 	public Node getCentral() {
@@ -184,6 +186,11 @@ public class Controller
         		
         		//take data from rs and moreData
 			}
+			
+			READ_RESULT = false;
+			IS_FROM_CENTRAL = false;
+		
+			
 		}
 		else if(type.equals("Central")) {
 			// i already have all of the data
@@ -194,7 +201,61 @@ public class Controller
     		transaction.endTransaction(Transaction.COMMIT);
     		
     		//take from rs
+    		READ_RESULT = false;
+			IS_FROM_CENTRAL = false;
+		
 		}
+	}
+	
+	public void writeGlobal(int iso_level, String targetLocation, int id, int value) {
+		
+		if(targetLocation.equals("Palawan")) {
+			
+			if(type.equals("Palawan") || type.equals("Central")) {
+				Transaction2 transaction = new Transaction2();
+				transaction.setIsolationLevel(iso_level);
+				transaction.beginTransaction();
+				transaction.transactionBody(0, id, value, false);
+				
+				new Thread(new SEND(new Message(targetLocation, "UPDATE", type, "id=" + id + ",value=" + value))).start();
+				
+				while(!WRITE_RESULT);
+				
+				if(NEIGHBOR_WRITE_SUCCESSFUL) {
+					transaction.endTransaction(Transaction.COMMIT);
+				}
+				else {
+					transaction.endTransaction(Transaction.ROLLBACK);
+				}
+			}
+			else if(type.equals("Marinduque")) {
+				new Thread(new SEND(new Message(targetLocation, "UPDATE", type, "id=" + id + ",value=" + value))).start();
+			}
+		}
+		else if(targetLocation.equals("Marinduque")) {
+			if(type.equals("Marinduque") || type.equals("Central")) {
+				Transaction2 transaction = new Transaction2();
+				transaction.setIsolationLevel(iso_level);
+				transaction.beginTransaction();
+				transaction.transactionBody(0, id, value, false);
+				
+				new Thread(new SEND(new Message(targetLocation, "UPDATE", type, "id=" + id + ",value=" + value))).start();
+				
+				while(!WRITE_RESULT);
+				
+				if(NEIGHBOR_WRITE_SUCCESSFUL) {
+					transaction.endTransaction(Transaction.COMMIT);
+				}
+				else {
+					transaction.endTransaction(Transaction.ROLLBACK);
+				}
+			}
+			else if(type.equals("Palawan")) {
+				new Thread(new SEND(new Message(targetLocation, "UPDATE", type, "id=" + id + ",value=" + value))).start();
+			}
+		}
+		
+		
 	}
 	
 	public void sendMessage(Message message) {
@@ -355,6 +416,159 @@ public class Controller
 					else if("Central".equals(originalSender)) {
 						System.out.println("I doubt central will be the original sender of a read request");
 					}
+				}
+			}
+			else if("UPDATE".equals(command)) {
+				String originalSender = item.getOriginalSender();
+				String targetLocation = item.getSender();
+				//new Thread(new SEND(new Message(targetLocation, "UPDATE", type, "id=" + id + ",value=" + value))).start();
+				if(originalSender.equals("Palawan")) {
+					if(targetLocation.equals("Palawan")) {
+						try {
+							s = new Socket(central.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+							pw.flush();
+							s.close();
+							
+							System.out.println("Updating data of Palawan in Central from Palawan, sent update to central");
+						}
+						catch(Exception e) {
+							System.out.println("Updating data of Palawan in Central from Palawan failed");
+							e.printStackTrace();
+							NEIGHBOR_WRITE_SUCCESSFUL = false;
+							WRITE_RESULT = true;
+						}
+					}
+					else if(targetLocation.equals("Marinduque")) {
+						try {
+							s = new Socket(central.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+							pw.flush();
+							s.close();
+							
+							System.out.println("Updating data of Marinduque in Central from Palawan, sent update to central");
+							
+							try {
+								s = new Socket(marin.getIpadd(), Port);
+								s.setSoTimeout(2000);
+								ObjectOutputStream pw1 = new ObjectOutputStream(s.getOutputStream());
+								pw1.writeObject(item);
+								pw1.flush();
+								s.close();
+								
+								System.out.println("Updating data of Marinduque in Marinduque from Palawan, sent update to Marinduque");
+							}
+							catch(Exception e) {
+								System.out.println("Updating data of Marinduque in Marinduque from Palawan failed");
+								e.printStackTrace();
+								NEIGHBOR_WRITE_SUCCESSFUL = false;
+								WRITE_RESULT = true;
+							}
+						}
+						catch(Exception e) {
+							System.out.println("Updating data of Marinduque in Central from Palawan failed");
+							e.printStackTrace();
+							NEIGHBOR_WRITE_SUCCESSFUL = false;
+							WRITE_RESULT = true;
+						}
+					}
+				}
+				else if(originalSender.equals("Marinduque")) {
+					if(targetLocation.equals("Marinduque")) {
+						try {
+							s = new Socket(central.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+							pw.flush();
+							s.close();
+							
+							System.out.println("Updating data of Marinduque in Central from Marinduque, sent update to central");
+						}
+						catch(Exception e) {
+							e.printStackTrace();
+							System.out.println("Updating data of Marinduque in Central from Marinduque failed");
+							NEIGHBOR_WRITE_SUCCESSFUL = false;
+							WRITE_RESULT = true;
+						}
+					}
+					else if(targetLocation.equals("Palawan")) {
+						try {
+							s = new Socket(central.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+							pw.flush();
+							s.close();
+							
+							System.out.println("Updating data of Palawan in Central from Marinduque, sent update to central");
+							
+							try {
+								s = new Socket(palawan.getIpadd(), Port);
+								s.setSoTimeout(2000);
+								ObjectOutputStream pw1 = new ObjectOutputStream(s.getOutputStream());
+								pw1.writeObject(item);
+								pw1.flush();
+								s.close();
+								
+								System.out.println("Updating data of Palawan in Palawan from Marinduque, sent update to Marinduque");
+							}
+							catch(Exception e) {
+								System.out.println("Updating data of Palawan in Palawan from Marinduque failed");
+								e.printStackTrace();
+								NEIGHBOR_WRITE_SUCCESSFUL = false;
+								WRITE_RESULT = true;
+							}
+						}
+						catch(Exception e) {
+							System.out.println("Updating data of Palawan in Central from Marinduque failed");
+							e.printStackTrace();
+							NEIGHBOR_WRITE_SUCCESSFUL = false;
+							WRITE_RESULT = true;
+						}
+					}
+				}
+				else if(originalSender.equals("Central")) {
+					if(targetLocation.equals("Palawan")) {
+						try {
+							s = new Socket(palawan.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+							pw.flush();
+							s.close();
+							
+							System.out.println("Updating data of Palawan in Palawan from Central, sent update to central");
+						}
+						catch(Exception e) {
+							System.out.println("Updating data of Palawan in Palawan from Central failed");
+							e.printStackTrace();
+							NEIGHBOR_WRITE_SUCCESSFUL = false;
+							WRITE_RESULT = true;
+						}
+					}
+					else if(targetLocation.equals("Marinduque")) {
+						try {
+							s = new Socket(marin.getIpadd(), Port);
+							s.setSoTimeout(2000);
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+							pw.flush();
+							s.close();
+							
+							System.out.println("Updating data of Marinduque in Marinduque from Central, sent update to central");
+						}
+						catch(Exception e) {
+							System.out.println("Updating data of Marinduque in Marinduque from Central failed");
+							e.printStackTrace();
+							NEIGHBOR_WRITE_SUCCESSFUL = false;
+							WRITE_RESULT = true;
+						}
+					}	
 				}
 			}
 			

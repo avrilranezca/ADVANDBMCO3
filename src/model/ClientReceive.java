@@ -90,6 +90,12 @@ public class ClientReceive implements Runnable{
 				    	c.readResponseAction(message);
 				    	
 				    }
+				    else if("UPDATE".equals(command)) {
+				    	System.out.println("Received UPDATE command");
+				    	String text = message.getText();
+				    	
+				    	System.out.println(text);
+				    }
 				    
 				    //System.out.println("Client receive (input string start: " + InputCommand.substring(0,5) + ")");
 					

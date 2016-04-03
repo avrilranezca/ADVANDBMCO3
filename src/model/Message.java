@@ -34,10 +34,11 @@ public class Message implements Serializable{
 		this.data = data;
 	}
 	
-	public Message(String sender, String command, String text) {
+	public Message(String sender, String command, String originalSender, String text) {
 		super();
 		this.sender = sender;
 		this.command = command;
+		this.originalSender = originalSender;
 		this.text = text;
 	}
 	
