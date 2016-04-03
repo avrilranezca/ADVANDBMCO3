@@ -20,7 +20,7 @@ public class ClientReceive implements Runnable{
 		//receive
 		 // process the message received
 				try{
-					//System.out.println("Client receive (start)");
+					System.out.println("Client receive (start)");
 					
 					InputStream input = S.getInputStream();
 								

@@ -27,6 +27,7 @@ public class Driver
 		String message;
 		while((message = sc.nextLine()) != null ) {
 			con.readGlobal();
+			//con.sendMessage(message);
 		}
 		 
 	}

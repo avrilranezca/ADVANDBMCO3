@@ -98,6 +98,8 @@ public class Controller
 			
 			while(!READ_RESULT){};
 			
+			System.out.println("After infinite loop");
+			
 			if(IS_FROM_CENTRAL) {
 				System.out.println("I should get everything from here");
 				System.out.println(moreData);
@@ -106,6 +108,8 @@ public class Controller
 				System.out.println("This data is only from Marinduque, I should also query my database");
 				System.out.println(moreData);
 			}
+			
+			System.out.println("After if else");
 			
 			READ_RESULT = false;
 			IS_FROM_CENTRAL = false;
@@ -150,7 +154,7 @@ public class Controller
 			Socket s;
 			
 			/*try {
-				s = new Socket(central.getIpadd(), Port);
+				s = new Socket(marin.getIpadd(), Port);
 				PrintWriter pw = new PrintWriter(s.getOutputStream());
 				pw.println(message);
 				pw.flush();
@@ -271,7 +275,7 @@ public class Controller
 					}
 					
 				}
-				else if("Marinuque".equals(sender)) {
+				else if("Marinduque".equals(sender)) {
 					if("Palawan".equals(originalSender)) {
 						try {
 							s = new Socket(palawan.getIpadd(), Port);
@@ -369,6 +373,8 @@ public class Controller
 			String sender = message.substring(message.indexOf('<') + 1, message.indexOf('>'));
 			String command = message.substring(message.indexOf('(') + 1, message.indexOf(')'));
 			String data = message.substring(message.indexOf('[') + 1, message.indexOf(']'));
+			
+			System.out.println("In readresponseaction");
 			
 			if(type.equals("Palawan")) {
 				if(sender.equals("Marinduque")) {

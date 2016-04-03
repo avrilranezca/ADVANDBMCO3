@@ -131,7 +131,7 @@ public class Transaction1 implements Transaction{
 		
 		try {
 			
-			String query = "SELECT id, memno, age_yr FROM hpq_mem WHERE id = 199036;";
+			String query = "SELECT id, memno, age_yr FROM hpq_mem WHERE id = 16818;";
 			
 			PreparedStatement ps = conn.prepareStatement(query);
 			
