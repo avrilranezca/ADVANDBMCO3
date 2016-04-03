@@ -1,0 +1,33 @@
+package model;
+
+import java.util.Scanner;
+
+public class Driver
+{
+	final static int PORT = 2345;
+	/*public static void main(String[] args)
+	{
+		MainGUI mainGUI = new MainGUI(new Controller());
+	}*/
+	
+	public static void main(String[] args){
+		
+		// Starting the Server
+
+		Controller con = new Controller("Palawan");
+		Server SER = new Server(con, PORT);
+		Thread X = new Thread(SER);
+		X.start();	// Runs the server process
+		
+		con.add("192.168.1.144", "Central");
+		//con.add("10.100.203.93", "Marinduque");
+		//MainGUI mainGUI = new MainGUI(con);
+		
+		Scanner sc = new Scanner(System.in);
+		String message;
+		while((message = sc.nextLine()) != null ) {
+			con.SEND("<Palawan>(READ)");
+		}
+		 
+	}
+}
