@@ -14,6 +14,8 @@ import java.util.concurrent.CyclicBarrier;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import com.sun.rowset.CachedRowSetImpl;
+
 public class Controller
 {
 	// database manager?
@@ -181,9 +183,14 @@ public class Controller
 					try{
 						s = new Socket(central.getIpadd(), Port);
 						s.setSoTimeout(2000);
+<<<<<<< HEAD
 						PrintWriter pw = new PrintWriter(s.getOutputStream());
 						pw.println(message);
 						view.appendText(message);
+=======
+						ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+						pw.writeObject(item);
+>>>>>>> origin/master
 						pw.flush();
 						s.close();
 					}
@@ -194,9 +201,14 @@ public class Controller
 						try {
 							s = new Socket(marin.getIpadd(), Port);
 							s.setSoTimeout(2000);
+<<<<<<< HEAD
 							PrintWriter pw = new PrintWriter(s.getOutputStream());
 							pw.println(message);
 							view.appendText(message);
+=======
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+>>>>>>> origin/master
 							pw.flush();
 							s.close();
 							System.out.println("I sent to marinduque");
@@ -210,8 +222,13 @@ public class Controller
 					try{
 						s = new Socket(central.getIpadd(), Port);
 						s.setSoTimeout(2000);
+<<<<<<< HEAD
 						PrintWriter pw = new PrintWriter(s.getOutputStream());
 						pw.println(message);
+=======
+						ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+						pw.writeObject(item);
+>>>>>>> origin/master
 						pw.flush();
 						s.close();
 					}
@@ -222,8 +239,13 @@ public class Controller
 						try {
 							s = new Socket(palawan.getIpadd(), Port);
 							s.setSoTimeout(2000);
+<<<<<<< HEAD
 							PrintWriter pw = new PrintWriter(s.getOutputStream());
 							pw.println(message);
+=======
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+>>>>>>> origin/master
 							pw.flush();
 							s.close();
 						} catch(Exception e1) {
@@ -240,9 +262,14 @@ public class Controller
 						try {
 							s = new Socket(marin.getIpadd(), Port);
 							s.setSoTimeout(2000);
+<<<<<<< HEAD
 							PrintWriter pw = new PrintWriter(s.getOutputStream());
 							pw.println(message);
 							view.appendText(message);
+=======
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+>>>>>>> origin/master
 							pw.flush();
 							s.close();
 						}
@@ -259,9 +286,14 @@ public class Controller
 						try {
 							s = new Socket(palawan.getIpadd(), Port);
 							s.setSoTimeout(2000);
+<<<<<<< HEAD
 							PrintWriter pw = new PrintWriter(s.getOutputStream());
 							pw.println(message);
 							view.appendText(message);
+=======
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+>>>>>>> origin/master
 							pw.flush();
 							s.close();
 						}
@@ -273,9 +305,14 @@ public class Controller
 						try {
 							s = new Socket(marin.getIpadd(), Port);
 							s.setSoTimeout(2000);
+<<<<<<< HEAD
 							PrintWriter pw = new PrintWriter(s.getOutputStream());
 							pw.println(message);
 							view.appendText(message);
+=======
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+>>>>>>> origin/master
 							pw.flush();
 							s.close();
 						}
@@ -290,9 +327,14 @@ public class Controller
 						try {
 							s = new Socket(palawan.getIpadd(), Port);
 							s.setSoTimeout(2000);
+<<<<<<< HEAD
 							PrintWriter pw = new PrintWriter(s.getOutputStream());
 							pw.println(message);
 							view.appendText(message);
+=======
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+>>>>>>> origin/master
 							pw.flush();
 							s.close();
 						}
@@ -381,9 +423,15 @@ public class Controller
 	
 		public void readResponseAction(String message) {
 			
+<<<<<<< HEAD
 			String sender = message.substring(message.indexOf('<') + 1, message.indexOf('>'));
 			String command = message.substring(message.indexOf('(') + 1, message.indexOf(')'));
 			String data = message.substring(message.indexOf('[') + 1, message.indexOf(']'));
+=======
+			String sender = message.getSender();
+			String command = message.getCommand();
+			CachedRowSetImpl data = message.getData();
+>>>>>>> origin/master
 			
 			view.appendText("In readresponseaction");
 			

@@ -3,6 +3,8 @@ package model;
 import java.io.Serializable;
 import java.sql.ResultSet;
 
+import com.sun.rowset.CachedRowSetImpl;
+
 public class Message implements Serializable{
 	
 	/**
@@ -13,7 +15,7 @@ public class Message implements Serializable{
 	private String sender;
 	private String command;
 	private String originalSender;
-	private ResultSet data;
+	private CachedRowSetImpl data;
 	
 	
 	
@@ -23,7 +25,7 @@ public class Message implements Serializable{
 		this.command = command;
 	}
 
-	public Message(String sender, String command, String originalSender, ResultSet data) {
+	public Message(String sender, String command, String originalSender, CachedRowSetImpl data) {
 		super();
 		this.sender = sender;
 		this.command = command;
@@ -53,10 +55,10 @@ public class Message implements Serializable{
 		this.originalSender = originalSender;
 	}
 
-	public ResultSet getData() {
+	public CachedRowSetImpl getData() {
 		return data;
 	}
-	public void setData(ResultSet data) {
+	public void setData(CachedRowSetImpl data) {
 		this.data = data;
 	}
 	
