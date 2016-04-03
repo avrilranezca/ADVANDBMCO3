@@ -111,6 +111,7 @@ public class Controller
 				try {
 					while(moreData.next()) {
 						System.out.println(moreData.getInt(1) + " " + moreData.getInt(2) + " " + moreData.getInt(3));
+						//Take all from moreData
 					}
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
@@ -129,6 +130,15 @@ public class Controller
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
+				Transaction1 transaction = new Transaction1();
+        		transaction.beginTransaction();
+        		ResultSet rs = transaction.transactionBody(0, 0, 0, false);
+        		transaction.endTransaction(Transaction.COMMIT);
+        		
+        		//take moreData and rs
+				
+				
 			}
 			
 			System.out.println("After if else");
@@ -152,6 +162,8 @@ public class Controller
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
+				//take all from moreData
 			}
 			else {
 				System.out.println("This data is only from Palawan, I should also query my database");
@@ -164,10 +176,24 @@ public class Controller
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
+				Transaction1 transaction = new Transaction1();
+        		transaction.beginTransaction();
+        		ResultSet rs = transaction.transactionBody(0, 0, 0, false);
+        		transaction.endTransaction(Transaction.COMMIT);
+        		
+        		//take data from rs and moreData
 			}
 		}
 		else if(type.equals("Central")) {
 			// i already have all of the data
+			
+			Transaction1 transaction = new Transaction1();
+    		transaction.beginTransaction();
+    		ResultSet rs = transaction.transactionBody(0, 0, 0, false);
+    		transaction.endTransaction(Transaction.COMMIT);
+    		
+    		//take from rs
 		}
 	}
 	

@@ -19,8 +19,8 @@ public class Driver
 		Thread X = new Thread(SER);
 		X.start();	// Runs the server process
 		
-		con.add("192.168.1.144", "Central");
-		con.add("192.168.1.33", "Marinduque");
+		con.add("192.168.1.33", "Central");
+		con.add("192.168.1.144", "Marinduque");
 		//MainGUI mainGUI = new MainGUI(con);
 		
 		Scanner sc = new Scanner(System.in);
