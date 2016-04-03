@@ -23,6 +23,10 @@ public class Controller
 	Node palawan;
 	final static int Port = 2345;
 	
+	private static volatile boolean READ_RESULT = false;
+	private static volatile boolean IS_FROM_CENTRAL = false;
+	private String moreData;
+	
 	public Node getCentral() {
 		return central;
 	}
@@ -63,6 +67,67 @@ public class Controller
 		}
 	}
 	
+	public String getMoreData() {
+		return moreData;
+	}
+	
+	public void setMoreData(String moreData) {
+		this.moreData = moreData;
+	}
+	
+	public boolean getReadResultFlag() {
+		return READ_RESULT;
+	}
+	
+	public void setReadResultFlag(boolean f) {
+		this.READ_RESULT = f;
+	}
+	
+	public static boolean isIS_FROM_CENTRAL() {
+		return IS_FROM_CENTRAL;
+	}
+
+	public static void setIS_FROM_CENTRAL(boolean iS_FROM_CENTRAL) {
+		IS_FROM_CENTRAL = iS_FROM_CENTRAL;
+	}
+
+	public void readGlobal() {
+		if(type.equals("Palawan")) {
+			SEND("<Palawan>(READ)");
+			
+			while(!READ_RESULT);
+			
+			if(IS_FROM_CENTRAL) {
+				System.out.println("I should get everything from here");
+				System.out.println(moreData);
+			}
+			else {
+				System.out.println("This data is only from Marinduque, I should also query my database");
+				System.out.println(moreData);
+			}
+			
+			READ_RESULT = false;
+			IS_FROM_CENTRAL = false;
+			
+		}
+		else if(type.equals("Marinduque")) {
+			SEND("<Marinduque>(READ)");
+			while(!READ_RESULT);
+
+			if(IS_FROM_CENTRAL) {
+				System.out.println("I should get everything from here");
+				System.out.println(moreData);
+			}
+			else {
+				System.out.println("This data is only from Palawan, I should also query my database");
+				System.out.println(moreData);
+			}
+		}
+		else if(type.equals("Central")) {
+			// i already have all of the data
+		}
+	}
+	
 	// Send POST notification
 	//write message, process to whom to send the message
 	public void SEND(String message)
@@ -88,7 +153,59 @@ public class Controller
 		String sender = message.substring(message.indexOf('<') + 1, message.indexOf('>'));
 		String command = message.substring(message.indexOf('(') + 1, message.indexOf(')'));
 		
-		if("Palawan".equals(sender)) {
+		if("READ".equals(command)) {
+			if("Palawan".equals(sender)) {
+				try{
+					s = new Socket(central.getIpadd(), Port);
+					PrintWriter pw = new PrintWriter(s.getOutputStream());
+					pw.println(message);
+					pw.flush();
+					s.close();
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					System.out.println("Read request from palawan to central failed");
+					
+					try {
+						s = new Socket(marin.getIpadd(), Port);
+						PrintWriter pw = new PrintWriter(s.getOutputStream());
+						pw.println(message);
+						pw.flush();
+						s.close();
+					} catch(Exception e1) {
+						e1.printStackTrace();
+						System.out.println("Read request from palawan to marinduque failed");
+					}
+				}
+			}
+			else if ("Marinduque".equals(sender)) {
+				try{
+					s = new Socket(central.getIpadd(), Port);
+					PrintWriter pw = new PrintWriter(s.getOutputStream());
+					pw.println(message);
+					pw.flush();
+					s.close();
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					System.out.println("Read request from marinduque to central failed");
+					
+					try {
+						s = new Socket(palawan.getIpadd(), Port);
+						PrintWriter pw = new PrintWriter(s.getOutputStream());
+						pw.println(message);
+						pw.flush();
+						s.close();
+					} catch(Exception e1) {
+						e1.printStackTrace();
+						System.out.println("Read request from marinduque to palawan failed");
+					}
+				}
+			}
+		}
+		
+		
+		/*if("Palawan".equals(sender)) {
 			try{
 				s = new Socket(central.getIpadd(), Port);
 				PrintWriter pw = new PrintWriter(s.getOutputStream());
@@ -111,7 +228,7 @@ public class Controller
 			catch(Exception e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
 		
 		/*try {
 			SOCK = new Socket(central.getIpadd(), Port);					// Open socket
@@ -156,9 +273,42 @@ public class Controller
 		} */
 		System.out.println("SEND (end)");
 	 }
+	
+		public void readResponseAction(String message) {
+			
+			String sender = message.substring(message.indexOf('<') + 1, message.indexOf('>'));
+			String command = message.substring(message.indexOf('(') + 1, message.indexOf(')'));
+			String data = message.substring(message.indexOf('[') + 1, message.indexOf(']'));
+			
+			if(type.equals("Palawan")) {
+				if(sender.equals("Marinduque")) {
+					
+				}
+				else if(sender.equals("Central")) {
+					IS_FROM_CENTRAL = true;
+				}
+				moreData = data;
+				READ_RESULT = true;
+			}
+			else if(type.equals("Central")) {
+				
+			}
+			else if(type.equals("Marinduque")) {
+				if(sender.equals("Palawan")) {
+					
+				}
+				
+				else if(sender.equals("Central")) {
+					IS_FROM_CENTRAL = true;
+				}
+				moreData = data;
+				READ_RESULT = true;
+			}
+			
+		}
 
 	// Receive POST notification
-		public void ReadingAction(String ip, byte [] bytes, String senderip)
+		/*public void ReadingAction(String ip, byte [] bytes, String senderip)
 		{
 			System.out.println("ReadAction (start)");
 			
@@ -188,7 +338,7 @@ public class Controller
 			Thread thread1 = new Thread(t);
             Transaction t2 = new Transaction(cb, TransactionInterface.READ_UNCOMMITTED, TransactionInterface.COMMIT);
             t2.addAction(new writeAction(t, 2, 1, 5));
-            Thread thread2 = new Thread(t2);*/
+            Thread thread2 = new Thread(t2);
             
 			System.out.println(ip + " " +  message);
 			/*thread1.start();
@@ -200,10 +350,10 @@ public class Controller
 				e1.printStackTrace();
 			} catch (BrokenBarrierException e1) {
 				e1.printStackTrace();
-			}*/
+			}
 			
 			System.out.println("ReadAction (end)");
-		}
+		}*/
 		
 
 		// Returns string cut off at either space, null or eof, depending on c

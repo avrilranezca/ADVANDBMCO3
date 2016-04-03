@@ -20,13 +20,13 @@ public class Driver
 		X.start();	// Runs the server process
 		
 		con.add("192.168.1.144", "Central");
-		//con.add("10.100.203.93", "Marinduque");
+		con.add("192.168.1.33", "Marinduque");
 		//MainGUI mainGUI = new MainGUI(con);
 		
 		Scanner sc = new Scanner(System.in);
 		String message;
 		while((message = sc.nextLine()) != null ) {
-			con.SEND("<Palawan>(READ)");
+			con.readGlobal();
 		}
 		 
 	}
