@@ -571,6 +571,56 @@ public class Controller
 					}	
 				}
 			}
+			else if("UPDATERESPONSE".equals(command)) {
+				String originalSender = item.getOriginalSender();
+				
+				if(originalSender.equals("Palawan")) {
+					try {
+						s = new Socket(palawan.getIpadd(), Port);
+						s.setSoTimeout(2000);
+						ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+						pw.writeObject(item);
+						pw.flush();
+						s.close();
+						
+						System.out.println("Sending UPDATERESPONSE to Palawan, message is from " + sender);
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+				else if(originalSender.equals("Marinduque")) {
+					try {
+						s = new Socket(marin.getIpadd(), Port);
+						s.setSoTimeout(2000);
+						ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+						pw.writeObject(item);
+						pw.flush();
+						s.close();
+						
+						System.out.println("Sending UPDATERESPONSE to Marinduque, message is from " + sender);
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+				else if(originalSender.equals("Central")) {
+					try {
+						s = new Socket(central.getIpadd(), Port);
+						s.setSoTimeout(2000);
+						ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+						pw.writeObject(item);
+						pw.flush();
+						s.close();
+						
+						System.out.println("Sending UPDATERESPONSE to Central, message is from " + sender);
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+				
+			}
 			
 			
 			/*if("Palawan".equals(sender)) {
@@ -644,6 +694,37 @@ public class Controller
 		
 		
 	 }
+	
+	public void writeResponseAction(Message message) {
+		String sender = message.getSender();
+		String text = message.getText();
+		System.out.println("In write response action");
+		
+		if(type.equals("Palawan")) {
+			if(sender.equals("Central")) {
+				if(text.equals("OK")) {
+					NEIGHBOR_WRITE_SUCCESSFUL = true;
+					WRITE_RESULT = true;
+				}
+			}
+		}
+		else if (type.equals("Marinduque")) {
+			if(sender.equals("Central")) {
+				if(text.equals("OK")) {
+					NEIGHBOR_WRITE_SUCCESSFUL = true;
+					WRITE_RESULT = true;
+				}
+			}
+		}
+		else if(type.equals("Central")) {
+			if(sender.equals("Palawan") || sender.equals("Marinduque")) {
+				if(text.equals("OK")) {
+					NEIGHBOR_WRITE_SUCCESSFUL = true;
+					WRITE_RESULT = true;
+				}
+			}
+		}
+	}
 	
 		public void readResponseAction(Message message) {
 			

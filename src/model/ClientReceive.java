@@ -60,6 +60,7 @@ public class ClientReceive implements Runnable{
 				    if("READ".equals(command)) {
 
 				    	Transaction1 transaction = new Transaction1();
+				    	transaction.setIsolationLevel(Transaction.ISO_SERIALIZABLE);
 	            		transaction.beginTransaction();
 	            		ResultSet rs = transaction.transactionBody(0, 0, 0, false);
 	            		transaction.endTransaction(Transaction.COMMIT);
@@ -91,10 +92,26 @@ public class ClientReceive implements Runnable{
 				    	
 				    }
 				    else if("UPDATE".equals(command)) {
-				    	System.out.println("Received UPDATE command");
 				    	String text = message.getText();
+				    	System.out.println("Command: UPDATE " + text);
+				    	String updateInfo[] = text.split(",");
+				    	int id = Integer.parseInt(updateInfo[0].substring(2));
+				    	int value = Integer.parseInt(updateInfo[1].substring(5));
 				    	
-				    	System.out.println(text);
+				    	Transaction2 transaction = new Transaction2();
+				    	transaction.setIsolationLevel(Transaction.ISO_SERIALIZABLE);
+				    	transaction.beginTransaction();
+				    	transaction.transactionBody(0, id, value, false);
+				    	transaction.endTransaction(Transaction.COMMIT);
+				    	
+				    	String targetLocation = message.getSender();
+				    	sender = message.getOriginalSender();
+				    	
+				    	c.sendMessage(new Message(c.getType(), "WRITERESPONSE", sender, "OK"));	
+				    }
+				    else if("UPDATERESPONSE".equals(command)) {
+				    	System.out.println("I got an UPDATE RESPONSE");
+				    	c.writeResponseAction(message);
 				    }
 				    
 				    //System.out.println("Client receive (input string start: " + InputCommand.substring(0,5) + ")");
