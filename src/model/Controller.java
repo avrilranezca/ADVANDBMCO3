@@ -2,10 +2,13 @@ package model;
 
 import java.awt.FlowLayout;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.BrokenBarrierException;
@@ -25,10 +28,9 @@ public class Controller
 	Node palawan;
 	final static int Port = 1234;
 	
-	private Viewer view;
 	private static volatile boolean READ_RESULT = false;
 	private static volatile boolean IS_FROM_CENTRAL = false;
-	private String moreData;
+	private ResultSet moreData;
 	
 	public Node getCentral() {
 		return central;
@@ -40,10 +42,6 @@ public class Controller
 	
 	public Node getPalawan() {
 		return palawan;
-	}
-	
-	public void setViewer(Viewer v){
-		view = v;
 	}
 	
 	public Controller(String type)
@@ -74,11 +72,11 @@ public class Controller
 		}
 	}
 	
-	public String getMoreData() {
+	public ResultSet getMoreData() {
 		return moreData;
 	}
 	
-	public void setMoreData(String moreData) {
+	public void setMoreData(ResultSet moreData) {
 		this.moreData = moreData;
 	}
 	
@@ -100,8 +98,8 @@ public class Controller
 
 	public void readGlobal() {
 		if(type.equals("Palawan")) {
-			new Thread(new SEND("<Palawan>(READ)")).start();
-			view.appendText("After sending <Palawan>(READ)");
+			new Thread(new SEND(new Message("Palawan", "READ"))).start();
+			System.out.println("After sending <Palawan>(READ)");
 			
 			while(!READ_RESULT){};
 			
@@ -109,11 +107,28 @@ public class Controller
 			
 			if(IS_FROM_CENTRAL) {
 				System.out.println("I should get everything from here");
-				System.out.println(moreData);
+				
+				try {
+					while(moreData.next()) {
+						System.out.println(moreData.getInt(1) + " " + moreData.getInt(2) + " " + moreData.getInt(3));
+					}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 			}
 			else {
 				System.out.println("This data is only from Marinduque, I should also query my database");
-				System.out.println(moreData);
+				
+				try {
+					while(moreData.next()) {
+						System.out.println(moreData.getInt(1) + " " + moreData.getInt(2) + " " + moreData.getInt(3));
+					}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 			System.out.println("After if else");
@@ -123,16 +138,32 @@ public class Controller
 			
 		}
 		else if(type.equals("Marinduque")) {
-			new Thread (new SEND("<Marinduque>(READ)")).start();
+			new Thread (new SEND(new Message("Marinduque", "READ"))).start();
 			while(!READ_RESULT);
 
 			if(IS_FROM_CENTRAL) {
 				System.out.println("I should get everything from here");
-				System.out.println(moreData);
+
+				try {
+					while(moreData.next()) {
+						System.out.println(moreData.getInt(1) + " " + moreData.getInt(2) + " " + moreData.getInt(3));
+					}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			else {
 				System.out.println("This data is only from Palawan, I should also query my database");
-				System.out.println(moreData);
+
+				try {
+					while(moreData.next()) {
+						System.out.println(moreData.getInt(1) + " " + moreData.getInt(2) + " " + moreData.getInt(3));
+					}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		else if(type.equals("Central")) {
@@ -140,7 +171,7 @@ public class Controller
 		}
 	}
 	
-	public void sendMessage(String message) {
+	public void sendMessage(Message message) {
 		new Thread(new SEND(message)).start();
 	}
 	
@@ -148,10 +179,10 @@ public class Controller
 	//write message, process to whom to send the message
 	public class SEND implements Runnable
 	{
-		private String message;
+		private Message item;
 		
-		public SEND(String message) {
-			this.message = message;
+		public SEND(Message item) {
+			this.item = item;
 			System.out.println("Received from readglobal message");
 		}
 		
@@ -174,23 +205,16 @@ public class Controller
 				e.printStackTrace();
 			}*/
 			
-			
-			String sender = message.substring(message.indexOf('<') + 1, message.indexOf('>'));
-			String command = message.substring(message.indexOf('(') + 1, message.indexOf(')'));
+			String sender = item.getSender();
+			String command = item.getCommand();
 			
 			if("READ".equals(command)) {
 				if("Palawan".equals(sender)) {
 					try{
 						s = new Socket(central.getIpadd(), Port);
 						s.setSoTimeout(2000);
-<<<<<<< HEAD
-						PrintWriter pw = new PrintWriter(s.getOutputStream());
-						pw.println(message);
-						view.appendText(message);
-=======
 						ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
 						pw.writeObject(item);
->>>>>>> origin/master
 						pw.flush();
 						s.close();
 					}
@@ -201,14 +225,8 @@ public class Controller
 						try {
 							s = new Socket(marin.getIpadd(), Port);
 							s.setSoTimeout(2000);
-<<<<<<< HEAD
-							PrintWriter pw = new PrintWriter(s.getOutputStream());
-							pw.println(message);
-							view.appendText(message);
-=======
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
 							pw.writeObject(item);
->>>>>>> origin/master
 							pw.flush();
 							s.close();
 							System.out.println("I sent to marinduque");
@@ -222,13 +240,8 @@ public class Controller
 					try{
 						s = new Socket(central.getIpadd(), Port);
 						s.setSoTimeout(2000);
-<<<<<<< HEAD
-						PrintWriter pw = new PrintWriter(s.getOutputStream());
-						pw.println(message);
-=======
 						ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
 						pw.writeObject(item);
->>>>>>> origin/master
 						pw.flush();
 						s.close();
 					}
@@ -239,37 +252,26 @@ public class Controller
 						try {
 							s = new Socket(palawan.getIpadd(), Port);
 							s.setSoTimeout(2000);
-<<<<<<< HEAD
-							PrintWriter pw = new PrintWriter(s.getOutputStream());
-							pw.println(message);
-=======
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
 							pw.writeObject(item);
->>>>>>> origin/master
 							pw.flush();
 							s.close();
 						} catch(Exception e1) {
 							e1.printStackTrace();
-							view.appendText("Read request from marinduque to palawan failed");
+							System.out.println("Read request from marinduque to palawan failed");
 						}
 					}
 				}
 			}
 			else if("READRESPONSE".equals(command)) {
-				String originalSender = message.substring(message.indexOf('\"') + 1, message.lastIndexOf('\"'));
+				String originalSender = item.getOriginalSender();
 				if("Palawan".equals(sender)) {
 					if("Marinduque".equals(originalSender)) {
 						try {
 							s = new Socket(marin.getIpadd(), Port);
 							s.setSoTimeout(2000);
-<<<<<<< HEAD
-							PrintWriter pw = new PrintWriter(s.getOutputStream());
-							pw.println(message);
-							view.appendText(message);
-=======
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
 							pw.writeObject(item);
->>>>>>> origin/master
 							pw.flush();
 							s.close();
 						}
@@ -278,7 +280,7 @@ public class Controller
 						}
 					}
 					else if("Central".equals(originalSender)) {
-						view.appendText("I doubt central will be the original sender of a read request");
+						System.out.println("I doubt central will be the original sender of a read request");
 					}
 				}
 				else if("Central".equals(sender)) {
@@ -286,14 +288,8 @@ public class Controller
 						try {
 							s = new Socket(palawan.getIpadd(), Port);
 							s.setSoTimeout(2000);
-<<<<<<< HEAD
-							PrintWriter pw = new PrintWriter(s.getOutputStream());
-							pw.println(message);
-							view.appendText(message);
-=======
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
 							pw.writeObject(item);
->>>>>>> origin/master
 							pw.flush();
 							s.close();
 						}
@@ -305,14 +301,8 @@ public class Controller
 						try {
 							s = new Socket(marin.getIpadd(), Port);
 							s.setSoTimeout(2000);
-<<<<<<< HEAD
-							PrintWriter pw = new PrintWriter(s.getOutputStream());
-							pw.println(message);
-							view.appendText(message);
-=======
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
 							pw.writeObject(item);
->>>>>>> origin/master
 							pw.flush();
 							s.close();
 						}
@@ -327,14 +317,8 @@ public class Controller
 						try {
 							s = new Socket(palawan.getIpadd(), Port);
 							s.setSoTimeout(2000);
-<<<<<<< HEAD
-							PrintWriter pw = new PrintWriter(s.getOutputStream());
-							pw.println(message);
-							view.appendText(message);
-=======
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
 							pw.writeObject(item);
->>>>>>> origin/master
 							pw.flush();
 							s.close();
 						}
@@ -343,7 +327,7 @@ public class Controller
 						}
 					}
 					else if("Central".equals(originalSender)) {
-						view.appendText("I doubt central will be the original sender of a read request");
+						System.out.println("I doubt central will be the original sender of a read request");
 					}
 				}
 			}
@@ -421,19 +405,13 @@ public class Controller
 		
 	 }
 	
-		public void readResponseAction(String message) {
+		public void readResponseAction(Message message) {
 			
-<<<<<<< HEAD
-			String sender = message.substring(message.indexOf('<') + 1, message.indexOf('>'));
-			String command = message.substring(message.indexOf('(') + 1, message.indexOf(')'));
-			String data = message.substring(message.indexOf('[') + 1, message.indexOf(']'));
-=======
 			String sender = message.getSender();
 			String command = message.getCommand();
 			CachedRowSetImpl data = message.getData();
->>>>>>> origin/master
 			
-			view.appendText("In readresponseaction");
+			System.out.println("In readresponseaction");
 			
 			if(type.equals("Palawan")) {
 				if(sender.equals("Marinduque")) {
@@ -513,7 +491,7 @@ public class Controller
 
 		// Returns string cut off at either space, null or eof, depending on c
 		public String getUntilSpaceOrNull(String bytesinstring, char c){
-			view.appendText("getUntilSpaceOrNull");
+			System.out.println("getUntilSpaceOrNull");
 			
 			int i = 0;											// Character index
 			char [] bytesinchar = bytesinstring.toCharArray();	// String converted to char array
@@ -540,9 +518,5 @@ public class Controller
 			  
 			// Return cut up string
 			return bytesinstring.substring(0, i);
-		}
-		
-		public void appendText(String s){
-			view.appendText(s);
 		}
 }

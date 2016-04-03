@@ -14,6 +14,7 @@ public class Message implements Serializable{
 	
 	private String sender;
 	private String command;
+	private String text;
 	private String originalSender;
 	private CachedRowSetImpl data;
 	
@@ -33,6 +34,13 @@ public class Message implements Serializable{
 		this.data = data;
 	}
 	
+	public Message(String sender, String command, String text) {
+		super();
+		this.sender = sender;
+		this.command = command;
+		this.text = text;
+	}
+	
 	public String getSender() {
 		return sender;
 	}
@@ -46,6 +54,13 @@ public class Message implements Serializable{
 		this.command = command;
 	}
 	
+	public String getText() {
+		return text;
+	}
+	
+	public void setText(String text) {
+		this.text = text;
+	}
 	
 	public String getOriginalSender() {
 		return originalSender;
