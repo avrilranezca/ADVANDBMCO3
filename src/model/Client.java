@@ -56,7 +56,7 @@ public class Client {
             		ResultSet rs = transaction.transactionBody(0, 0, 0, false);
             		transaction.endTransaction(Transaction.COMMIT);
             		
-            		String toSend = "(READRESPONSE)[";
+            		String toSend = "<" + c.getType() + ">" + "(READRESPONSE)\"" + sender + "\"[";
             		
             		while(rs.next()) {
             			toSend += "{" + rs.getInt(1) + "," + rs.getInt(2) + "," + rs.getInt(3) + "}|";

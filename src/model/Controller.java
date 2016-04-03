@@ -172,6 +172,7 @@ public class Controller
 						pw.println(message);
 						pw.flush();
 						s.close();
+						System.out.println("I sent to marinduque");
 					} catch(Exception e1) {
 						e1.printStackTrace();
 						System.out.println("Read request from palawan to marinduque failed");
@@ -200,6 +201,61 @@ public class Controller
 						e1.printStackTrace();
 						System.out.println("Read request from marinduque to palawan failed");
 					}
+				}
+			}
+		}
+		else if("READRESPONSE".equals(command)) {
+			String originalSender = message.substring(message.indexOf('\"') + 1, message.lastIndexOf('\"'));
+			if("Palawan".equals(sender)) {
+				if("Marinduque".equals(originalSender)) {
+					try {
+						s = new Socket(marin.getIpadd(), Port);
+						PrintWriter pw = new PrintWriter(s.getOutputStream());
+						pw.println(message);
+						pw.flush();
+						s.close();
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+				else if("Central".equals(originalSender)) {
+					System.out.println("I doubt central will be the original sender of a read request");
+				}
+			}
+			else if("Central".equals(sender)) {
+				if("Palawan".equals(originalSender)) {
+					try {
+						s = new Socket(palawan.getIpadd(), Port);
+						PrintWriter pw = new PrintWriter(s.getOutputStream());
+						pw.println(message);
+						pw.flush();
+						s.close();
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+				else if("Marinduque".equals(originalSender)) {
+					try {
+						s = new Socket(marin.getIpadd(), Port);
+						PrintWriter pw = new PrintWriter(s.getOutputStream());
+						pw.println(message);
+						pw.flush();
+						s.close();
+					}
+					catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+				
+			}
+			else if("Marinuque".equals(sender)) {
+				if("Palawan".equals(originalSender)) {
+					
+				}
+				else if("Central".equals(originalSender)) {
+					System.out.println("I doubt central will be the original sender of a read request");
 				}
 			}
 		}
