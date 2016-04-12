@@ -26,7 +26,7 @@ public class ClientReceive implements Runnable{
 					System.out.println("Client receive (start)");
 					
 					/*InputStream input = S.getInputStream();
-								
+					
 					//System.out.println("Client receive (read bytes)");
 					
 					byte [] scannedbytes = new byte [65500];
@@ -62,7 +62,7 @@ public class ClientReceive implements Runnable{
 				    	Transaction1 transaction = new Transaction1();
 				    	transaction.setIsolationLevel(Transaction.ISO_SERIALIZABLE);
 	            		transaction.beginTransaction();
-	            		ResultSet rs = transaction.transactionBody(0, 0, 0, false);
+	            		ResultSet rs = transaction.transactionBody(c.getType(), 0, 0, 0);
 	            		transaction.endTransaction(Transaction.COMMIT);
 	            		
 	            		/*String toSend = "<" + c.getType() + ">" + "(READRESPONSE)\"" + sender + "\"[";
@@ -93,6 +93,15 @@ public class ClientReceive implements Runnable{
 				    }
 				    else if("UPDATE".equals(command)) {
 				    	String text = message.getText();
+				    	String targetLocation = message.getSender();
+				    	int householdNum = 0;
+				    	if("Palawan".equals(targetLocation)) {
+				    		householdNum = 16818; 
+				    	}
+				    	else if("Marinduque".equals(targetLocation)) {
+				    		householdNum = 199036;
+				    	}
+				    	
 				    	System.out.println("Command: UPDATE " + text);
 				    	String updateInfo[] = text.split(",");
 				    	int id = Integer.parseInt(updateInfo[0].substring(3));
@@ -101,10 +110,9 @@ public class ClientReceive implements Runnable{
 				    	Transaction2 transaction = new Transaction2();
 				    	transaction.setIsolationLevel(Transaction.ISO_SERIALIZABLE);
 				    	transaction.beginTransaction();
-				    	transaction.transactionBody(0, id, value, false);
+				    	transaction.transactionBody(c.getType(), id, value, householdNum);
 				    	transaction.endTransaction(Transaction.COMMIT);
 				    	
-				    	String targetLocation = message.getSender();
 				    	sender = message.getOriginalSender();
 				    	
 				    	c.sendMessage(new Message(c.getType(), "UPDATERESPONSE", sender, "OK"));	
@@ -112,6 +120,18 @@ public class ClientReceive implements Runnable{
 				    else if("UPDATERESPONSE".equals(command)) {
 				    	System.out.println("I got an UPDATE RESPONSE");
 				    	c.writeResponseAction(message);
+				    }
+				    else if("TOCENTRALUPDATE".equals(command)) {
+				    	message.setCommand("UPDATE");
+				    	
+				    	String text = message.getText();
+
+				    	String updateInfo[] = text.split(",");
+				    	int id = Integer.parseInt(updateInfo[0].substring(3));
+				    	int value = Integer.parseInt(updateInfo[1].substring(6));
+				    	
+				    	c.writeGlobal(Transaction.ISO_SERIALIZABLE, message.getSender(), id, value);
+				    	
 				    }
 				    
 				    //System.out.println("Client receive (input string start: " + InputCommand.substring(0,5) + ")");
@@ -127,7 +147,7 @@ public class ClientReceive implements Runnable{
 					x.printStackTrace();
 					
 				}
-		 
+		 System.out.println("End of ClientReceive");
 	 }
 
 }

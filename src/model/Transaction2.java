@@ -9,16 +9,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import db.DBConnection;
+import db.DBConnectionMSSQL;
 
 public class Transaction2 implements Transaction{
 	
 	private int isolation_level;
-	private DBConnection db;
+	private DBConnectionMSSQL db;
 	private Connection conn;
 	private BufferedWriter bufferedWriter;
 	
 	public Transaction2() {
-		db = new DBConnection();
+		db = new DBConnectionMSSQL();
 		conn = db.getConnection();
 	}
 
@@ -80,12 +81,18 @@ public class Transaction2 implements Transaction{
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+		try {
+			conn.setAutoCommit(false);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		String queryLock = "LOCK TABLES db_hpq_marinduque.hpq_mem WRITE;";
+		/*String queryLock = "LOCK TABLES hpq_mem WRITE;";
 		
 		PreparedStatement ps;
 		try {
-			conn.setAutoCommit(false);
+			
 			ps = conn.prepareStatement(queryLock);
 			ps.execute();
 			ps = conn.prepareStatement("START TRANSACTION;");
@@ -93,16 +100,16 @@ public class Transaction2 implements Transaction{
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		
 	}
 
 	@Override
-	public ResultSet transactionBody(int number, int id, int value, boolean toLog) {
+	public ResultSet transactionBody(String type, int id, int value, int householdNum) {
 		// TODO Auto-generated method stub
 		System.out.println("Transaction Body 2");
 		
-		return updateValueInTable(number, id, value, toLog);
+		return updateValueInTable(type, id, value, householdNum);
 		//insertIntoTable(number, 678);
 	}
 
@@ -138,9 +145,9 @@ public class Transaction2 implements Transaction{
 					break;
 			}
 			
-			String unlockQuery = "UNLOCK TABLES;";
+			/*String unlockQuery = "UNLOCK TABLES;";
 			PreparedStatement ps2 = conn.prepareStatement(unlockQuery);
-			ps2.execute();
+			ps2.execute();*/
 			
 			//ps.executeQuery();
 			
@@ -149,7 +156,7 @@ public class Transaction2 implements Transaction{
 		}
 	}
 	
-	public ResultSet updateValueInTable(int number, int id, int value, boolean toLog) {
+	public ResultSet updateValueInTable(String type, int id, int value, int householdNum) {
 		try {
 			
 			/*String query = "SELECT id, memno, age_yr FROM hpq_mem WHERE id = ?;";
@@ -165,11 +172,12 @@ public class Transaction2 implements Transaction{
 				oldValue = String.valueOf(rs.getInt(3));
 			}*/
 			
-			String query2 = "UPDATE hpq_mem SET age_yr = ? WHERE memno = ?;";
+			String query2 = "UPDATE hpq_mem SET age_yr = ? WHERE memno = ? AND id = ?";
 			
 			PreparedStatement ps = conn.prepareStatement(query2);
 			ps.setInt(1, value);
 			ps.setInt(2, id);
+			ps.setInt(3, householdNum);
 			
 			
 			//Uncomment when going to execute for real
@@ -195,7 +203,7 @@ public class Transaction2 implements Transaction{
 			e.printStackTrace();
 		}
 		
-		return queryTable(number);
+		return queryTable(type);
 	}
 
 	/*public void insertIntoTable(int number, int value) {
@@ -226,18 +234,28 @@ public class Transaction2 implements Transaction{
 		}
 	}*/
 	
-public ResultSet queryTable(int number) {
+public ResultSet queryTable(String type) {
 		
 		try {
 			
-			String query = "SELECT id, memno, age_yr FROM hpq_mem WHERE id = 199036;";
+			String query = "SELECT id, memno, age_yr FROM hpq_mem WHERE id = ";
+			
+			if("Palawan".equals(type)) {
+				query += "16818;" ;
+			}
+			else if("Marinduque".equals(type)) {
+				query += "199036;";
+			}
+			else if("Central".equals(type)) {
+				query += "16818 OR id = 199036;";
+			}
 			
 			PreparedStatement ps = conn.prepareStatement(query);
 			
 			ResultSet rs = ps.executeQuery();
 			
 			while(rs.next()) {
-				System.out.println(number + " id: " + rs.getInt(1) + ", memno: " + rs.getInt(2) + ", age_yr: " + rs.getInt(3));
+				System.out.println(type + " id: " + rs.getInt(1) + ", memno: " + rs.getInt(2) + ", age_yr: " + rs.getInt(3));
 			}
 			
 			return rs;

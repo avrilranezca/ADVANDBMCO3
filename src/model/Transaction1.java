@@ -10,17 +10,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import db.DBConnection;
+import db.DBConnectionMSSQL;
 
 public class Transaction1 implements Transaction{
 	
 	private int isolation_level;
 	
 	private Connection conn;
-	private DBConnection db;
+	private DBConnectionMSSQL db;
 	private BufferedWriter bufferedWriter;
 	
 	public Transaction1() {
-		db = new DBConnection();
+		db = new DBConnectionMSSQL();
 		conn = db.getConnection();
 		try {
 			bufferedWriter = new BufferedWriter(new FileWriter("log.txt", true));
@@ -81,7 +82,7 @@ public class Transaction1 implements Transaction{
 		// TODO Auto-generated method stub
 		System.out.println("Transaction 1 begins");
 		
-		String queryLock = "LOCK TABLES hpq_mem READ;";
+		/*String queryLock = "LOCK TABLES hpq_mem READ;";
 		
 		PreparedStatement ps;
 		try {
@@ -93,19 +94,19 @@ public class Transaction1 implements Transaction{
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		
 		System.out.println("After obtaining readLock");
 		
 	}
 
 	@Override
-	public ResultSet transactionBody(int number, int id, int value, boolean toLog) {
+	public ResultSet transactionBody(String type, int id, int value, int householdNum) {
 		// TODO Auto-generated method stub
 		
 		System.out.println("Transaction Body 1");
 		
-		return queryTable(number);
+		return queryTable(type);
 		
 	}
 
@@ -113,7 +114,7 @@ public class Transaction1 implements Transaction{
 	public void endTransaction(int action) {
 		// TODO Auto-generated method stub
 		
-		String unlockQuery = "UNLOCK TABLES;";
+		/*String unlockQuery = "UNLOCK TABLES;";
 		PreparedStatement ps2;
 		try {
 			ps2 = conn.prepareStatement(unlockQuery);
@@ -121,17 +122,27 @@ public class Transaction1 implements Transaction{
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		
 		System.out.println("End of transaction 1");
 		
 	}
 	
-	public ResultSet queryTable(int number) {
+	public ResultSet queryTable(String type) {
 		
 		try {
 			
-			String query = "SELECT id, memno, age_yr FROM hpq_mem WHERE id = 16818;";
+			String query = "SELECT id, memno, age_yr FROM hpq_mem WHERE id =";
+			
+			if("Palawan".equals(type)) {
+				query += "16818;" ;
+			}
+			else if("Marinduque".equals(type)) {
+				query += "199036;";
+			}
+			else if("Central".equals(type)) {
+				query += "16818 OR id = 199036;";
+			}
 			
 			PreparedStatement ps = conn.prepareStatement(query);
 			

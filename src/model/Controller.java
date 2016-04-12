@@ -26,13 +26,16 @@ public class Controller
 	Node central;
 	Node marin;
 	Node palawan;
-	final static int Port = 1234;
+	final static int Port = 9876;
 	
 	private static volatile boolean READ_RESULT = false;
 	private static volatile boolean WRITE_RESULT = false;
 	private static volatile boolean IS_FROM_CENTRAL = false;
 	private static volatile boolean NEIGHBOR_WRITE_SUCCESSFUL = false;
 	private ResultSet moreData;
+	private Display d;
+	private ResultSet tempRS1;
+	private ResultSet tempRS2;
 	
 	public Node getCentral() {
 		return central;
@@ -42,8 +45,25 @@ public class Controller
 		return marin;
 	}
 	
+	
 	public Node getPalawan() {
 		return palawan;
+	}
+	
+	public void setDisplay(Display dis){
+		d = dis;
+	}
+	
+	public String getOtherType() {
+		return otherType();
+	}
+	
+	public String otherType(){
+		if (type.equals("Palawan"))
+			return "Marinduque";
+		if (type.equals("Marinduque"))
+			return "Palawan";
+		else return "Central";
 	}
 	
 	public Controller(String type)
@@ -110,34 +130,22 @@ public class Controller
 			if(IS_FROM_CENTRAL) {
 				System.out.println("I should get everything from here");
 				
-				try {
-					while(moreData.next()) {
-						System.out.println(moreData.getInt(1) + " " + moreData.getInt(2) + " " + moreData.getInt(3));
-						//Take all from moreData
-					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				printData(moreData);
 				
 			}
 			else {
 				System.out.println("This data is only from Marinduque, I should also query my database");
 				
-				try {
-					while(moreData.next()) {
-						System.out.println(moreData.getInt(1) + " " + moreData.getInt(2) + " " + moreData.getInt(3));
-					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				printData(moreData);
 				
 				Transaction1 transaction = new Transaction1();
+				transaction.setIsolationLevel(Transaction.ISO_SERIALIZABLE);
         		transaction.beginTransaction();
-        		ResultSet rs = transaction.transactionBody(0, 0, 0, false);
+        		ResultSet rs = transaction.transactionBody(type, 0, 0, 0);
         		transaction.endTransaction(Transaction.COMMIT);
         		
+        		
+        		printData(rs);
         		//take moreData and rs
 				
 				
@@ -156,33 +164,22 @@ public class Controller
 			if(IS_FROM_CENTRAL) {
 				System.out.println("I should get everything from here");
 
-				try {
-					while(moreData.next()) {
-						System.out.println(moreData.getInt(1) + " " + moreData.getInt(2) + " " + moreData.getInt(3));
-					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				printData(moreData);
 				
 				//take all from moreData
 			}
 			else {
 				System.out.println("This data is only from Palawan, I should also query my database");
 
-				try {
-					while(moreData.next()) {
-						System.out.println(moreData.getInt(1) + " " + moreData.getInt(2) + " " + moreData.getInt(3));
-					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				printData(moreData);
 				
 				Transaction1 transaction = new Transaction1();
+				transaction.setIsolationLevel(Transaction.ISO_SERIALIZABLE);
         		transaction.beginTransaction();
-        		ResultSet rs = transaction.transactionBody(0, 0, 0, false);
+        		ResultSet rs = transaction.transactionBody(type, 0, 0, 0);
         		transaction.endTransaction(Transaction.COMMIT);
+        		
+        		printData(rs);
         		
         		//take data from rs and moreData
 			}
@@ -196,9 +193,12 @@ public class Controller
 			// i already have all of the data
 			
 			Transaction1 transaction = new Transaction1();
+			transaction.setIsolationLevel(Transaction.ISO_SERIALIZABLE);
     		transaction.beginTransaction();
-    		ResultSet rs = transaction.transactionBody(0, 0, 0, false);
+    		ResultSet rs = transaction.transactionBody(type, 0, 0, 0);
     		transaction.endTransaction(Transaction.COMMIT);
+    		
+    		printData(rs);
     		
     		//take from rs
     		READ_RESULT = false;
@@ -207,15 +207,15 @@ public class Controller
 		}
 	}
 	
-	public void writeGlobal(int iso_level, String targetLocation, int id, int value) {
+	public synchronized void writeGlobal(int iso_level, String targetLocation, int id, int value) {
 		
 		if(targetLocation.equals("Palawan")) {
 			
-			if(type.equals("Palawan") || type.equals("Central")) {
+			if(/*type.equals("Palawan") || */type.equals("Central")) {
 				Transaction2 transaction = new Transaction2();
 				transaction.setIsolationLevel(iso_level);
 				transaction.beginTransaction();
-				transaction.transactionBody(0, id, value, false);
+				ResultSet rs = transaction.transactionBody(type, id, value, 16818);
 				
 				new Thread(new SEND(new Message(targetLocation, "UPDATE", type, "id=" + id + ",value=" + value))).start();
 				
@@ -223,21 +223,25 @@ public class Controller
 				
 				if(NEIGHBOR_WRITE_SUCCESSFUL) {
 					transaction.endTransaction(Transaction.COMMIT);
+					System.out.println("I committed");
 				}
 				else {
 					transaction.endTransaction(Transaction.ROLLBACK);
+					System.out.println("I rolled back");
 				}
+				
+				printData(rs);
 			}
-			else if(type.equals("Marinduque")) {
+			else if(type.equals("Marinduque") || type.equals("Palawan")) {
 				new Thread(new SEND(new Message(targetLocation, "UPDATE", type, "id=" + id + ",value=" + value))).start();
 			}
 		}
 		else if(targetLocation.equals("Marinduque")) {
-			if(type.equals("Marinduque") || type.equals("Central")) {
+			if(/*type.equals("Marinduque") || */type.equals("Central")) {
 				Transaction2 transaction = new Transaction2();
 				transaction.setIsolationLevel(iso_level);
 				transaction.beginTransaction();
-				transaction.transactionBody(0, id, value, false);
+				ResultSet rs = transaction.transactionBody(type, id, value, 199036);
 				
 				new Thread(new SEND(new Message(targetLocation, "UPDATE", type, "id=" + id + ",value=" + value))).start();
 				
@@ -245,17 +249,21 @@ public class Controller
 				
 				if(NEIGHBOR_WRITE_SUCCESSFUL) {
 					transaction.endTransaction(Transaction.COMMIT);
+					System.out.println("I committed");
 				}
 				else {
 					transaction.endTransaction(Transaction.ROLLBACK);
+					System.out.println("I rolled back");
 				}
+				
+				printData(rs);
 			}
-			else if(type.equals("Palawan")) {
+			else if(type.equals("Palawan") || type.equals("Marinduque")) {
 				new Thread(new SEND(new Message(targetLocation, "UPDATE", type, "id=" + id + ",value=" + value))).start();
 			}
 		}
 		
-		
+		System.out.println("End of global write");
 	}
 	
 	public void sendMessage(Message message) {
@@ -427,12 +435,19 @@ public class Controller
 						try {
 							s = new Socket(central.getIpadd(), Port);
 							s.setSoTimeout(2000);
+							
+							System.out.println("About to send tocentral update, target Location is Palawan");
+							
+							item.setCommand("TOCENTRALUPDATE");
+							
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
 							pw.writeObject(item);
 							pw.flush();
 							s.close();
 							
-							System.out.println("Updating data of Palawan in Central from Palawan, sent update to central");
+							System.out.println("Command: " + item.getCommand());
+							
+							System.out.println("Send to central update");
 						}
 						catch(Exception e) {
 							System.out.println("Updating data of Palawan in Central from Palawan failed");
@@ -441,56 +456,31 @@ public class Controller
 							WRITE_RESULT = true;
 						}
 					}
-					else if(targetLocation.equals("Marinduque")) {
-						int ready = 0;
-						Socket s1=null, s2 = null;
+					else if(targetLocation.equals("Marinduque")){
 						try {
-							s1 = new Socket(central.getIpadd(), Port);
-							s1.setSoTimeout(2000);
+							s = new Socket(central.getIpadd(), Port);
+							s.setSoTimeout(2000);
 							
-							ready++;
+							System.out.println("About to send tocentral update, target Location is Marinduque");
 							
-							System.out.println("Updating data of Marinduque in Central from Palawan, sent update to central");
+							item.setCommand("TOCENTRALUPDATE");
+							
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+							pw.flush();
+							s.close();
+							
+							System.out.println("Command: " + item.getCommand());
+							
+							System.out.println("Send to central update");
 							
 						}
 						catch(Exception e) {
-							System.out.println("Updating data of Marinduque in Central from Palawan failed");
+							System.out.println("Cannot update to Marinduque, Central is closed, transaction aborted");
 							e.printStackTrace();
+
 							NEIGHBOR_WRITE_SUCCESSFUL = false;
 							WRITE_RESULT = true;
-						}
-						
-						try {
-							s2 = new Socket(marin.getIpadd(), Port);
-							s2.setSoTimeout(2000);
-							
-							ready++;
-							
-							System.out.println("Updating data of Marinduque in Marinduque from Palawan, sent update to Marinduque");
-						}
-						catch(Exception e) {
-							System.out.println("Updating data of Marinduque in Marinduque from Palawan failed");
-							e.printStackTrace();
-							NEIGHBOR_WRITE_SUCCESSFUL = false;
-							WRITE_RESULT = true;
-						}
-						
-						if(ready == 2) {
-							ObjectOutputStream pw;
-							try {
-								pw = new ObjectOutputStream(s1.getOutputStream());
-								pw.writeObject(item);
-								pw.flush();
-								s1.close();
-								
-								ObjectOutputStream pw1 = new ObjectOutputStream(s2.getOutputStream());
-								pw1.writeObject(item);
-								pw1.flush();
-								s2.close();
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
 						}
 					}
 				}
@@ -499,12 +489,13 @@ public class Controller
 						try {
 							s = new Socket(central.getIpadd(), Port);
 							s.setSoTimeout(2000);
+							
+							item.setCommand("TOCENTRALUPDATE");
+							
 							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
 							pw.writeObject(item);
 							pw.flush();
 							s.close();
-							
-							System.out.println("Updating data of Marinduque in Central from Marinduque, sent update to central");
 						}
 						catch(Exception e) {
 							e.printStackTrace();
@@ -514,56 +505,24 @@ public class Controller
 						}
 					}
 					else if(targetLocation.equals("Palawan")) {
-						Socket s1 = null, s2 = null;
-						int ready = 0;
-						
 						try {
-							s1 = new Socket(central.getIpadd(), Port);
-							s1.setSoTimeout(2000);
+							s = new Socket(central.getIpadd(), Port);
+							s.setSoTimeout(2000);
 							
-							ready++;
+							item.setCommand("TOCENTRALUPDATE");
 							
-							System.out.println("Updating data of Palawan in Central from Marinduque, sent update to central");
-							
+							ObjectOutputStream pw = new ObjectOutputStream(s.getOutputStream());
+							pw.writeObject(item);
+							pw.flush();
+							s.close();
 							
 						}
 						catch(Exception e) {
-							System.out.println("Updating data of Palawan in Central from Marinduque failed");
+							System.out.println("Cannot update to Palawan, Central is closed, transaction aborted");
 							e.printStackTrace();
+
 							NEIGHBOR_WRITE_SUCCESSFUL = false;
 							WRITE_RESULT = true;
-						}
-						
-						try {
-							s2 = new Socket(palawan.getIpadd(), Port);
-							s2.setSoTimeout(2000);
-							
-							ready++;
-							
-							System.out.println("Updating data of Palawan in Palawan from Marinduque, sent update to Marinduque");
-						}
-						catch(Exception e) {
-							System.out.println("Updating data of Palawan in Palawan from Marinduque failed");
-							e.printStackTrace();
-							NEIGHBOR_WRITE_SUCCESSFUL = false;
-							WRITE_RESULT = true;
-						}
-						
-						if(ready == 2) {
-							try {
-								ObjectOutputStream pw = new ObjectOutputStream(s1.getOutputStream());
-								pw.writeObject(item);
-								pw.flush();
-								s1.close();
-								
-								ObjectOutputStream pw1 = new ObjectOutputStream(s2.getOutputStream());
-								pw1.writeObject(item);
-								pw1.flush();
-								s2.close();
-							}
-							catch(Exception e) {
-								e.printStackTrace();
-							}
 						}
 					}
 				}
@@ -730,6 +689,117 @@ public class Controller
 		
 	 }
 	
+	public void readLocal(int isolevel) {
+
+		if (type.equals("Palawan")) {
+//			d.appendProgress("PALAWAN");
+			Transaction1 transaction = new Transaction1();
+			if (isolevel != 0)
+				transaction.setIsolationLevel(isolevel);
+			transaction.beginTransaction();
+			ResultSet rs = transaction.transactionBody(type, 0, 0, 0);
+			transaction.endTransaction(Transaction.COMMIT);
+
+			printData(rs);
+
+			// take moreData and rs
+			READ_RESULT = false;
+
+		} else if (type.equals("Marinduque")) {
+
+			Transaction1 transaction = new Transaction1();
+			transaction.beginTransaction();
+			ResultSet rs = transaction.transactionBody(type, 0, 0, 0);
+			transaction.endTransaction(Transaction.COMMIT);
+
+			printData(rs);
+
+			// take moreData and rs
+			READ_RESULT = false;
+
+		} else {
+
+			Transaction1 transaction = new Transaction1();
+			transaction.beginTransaction();
+			ResultSet rs = transaction.transactionBody(type, 0, 0, 0);
+			transaction.endTransaction(Transaction.COMMIT);
+
+			printData(rs);
+
+			// take moreData and rs
+			READ_RESULT = false;
+		}
+	}
+	
+public void readDoubleLocal(int t1isoL, int t2isoL){
+		
+		Thread T1 = new Thread(){
+			  public void run () {
+				  Transaction1 transaction1 = new Transaction1();
+				  transaction1.setIsolationLevel(t1isoL);
+				  transaction1.beginTransaction();
+				  setTRS(transaction1.transactionBody(type, 0, 0, 0), 1);
+				  transaction1.endTransaction(Transaction.COMMIT);		    
+			  }
+			};
+			
+		Thread T2 = new Thread(){
+			  public void run () {
+				  Transaction1 transaction1 = new Transaction1();
+				  transaction1.setIsolationLevel(t1isoL);
+				  transaction1.beginTransaction();
+				  setTRS(transaction1.transactionBody(type, 0, 0, 0), 2);
+				  transaction1.endTransaction(Transaction.COMMIT);;
+			  }
+			};
+		
+		T1.start();
+		try {
+			T1.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		T2.start();
+	}
+	
+	public void readwrite(){
+		
+		Thread T1 = new Thread(){
+			  public void run () {
+				  Transaction1 transactionRead = new Transaction1();
+				  transactionRead.setIsolationLevel(0);
+				  transactionRead.beginTransaction();
+				  setTRS(transactionRead.transactionBody(type, 0, 0, 0), 1);
+				  transactionRead.endTransaction(Transaction.COMMIT);
+			  }
+			};
+			
+			Thread T2 = new Thread(){
+				  public void run () {
+					  Transaction2 transactionWrite = new Transaction2();
+					  transactionWrite.setIsolationLevel(0);
+					  transactionWrite.beginTransaction();
+					  setTRS(transactionWrite.transactionBody(type, 0, 0, 0), 2);
+					  transactionWrite.endTransaction(Transaction.COMMIT);;
+				  }
+				};
+				
+		T1.start();
+		T2.start();
+	}
+	
+	public void setTRS(ResultSet rs, int x){
+		if(x == 1){
+			tempRS1 = rs;
+			printData(tempRS1);
+			}
+		if(x == 2){
+			tempRS2 = rs;
+			printData(tempRS2);
+		}
+	}
+	
 	public void writeResponseAction(Message message) {
 		String sender = message.getSender();
 		String text = message.getText();
@@ -874,5 +944,33 @@ public class Controller
 			  
 			// Return cut up string
 			return bytesinstring.substring(0, i);
+		}
+		
+		public void printData(ResultSet rs){
+
+			try {
+				d.appendText("\n");
+
+				int numColumns = rs.getMetaData().getColumnCount();
+
+				for (int j = 1; j <= numColumns; j++) {
+					String tempString = String.format("%-25s\t", rs
+							.getMetaData().getColumnName(j));
+					d.appendText(tempString);
+				}
+				d.appendText("\n");
+
+				while (rs.next()) {
+
+					for (int i = 1; i <= numColumns; i++)
+						d.appendText(String.format("%-25s\t", rs.getObject(i)));
+					d.appendText("\n");
+				}
+
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 }

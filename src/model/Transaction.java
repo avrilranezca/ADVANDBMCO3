@@ -19,7 +19,7 @@ public interface Transaction {
 	
 	public void beginTransaction();
 	
-	public ResultSet transactionBody(int number, int id, int value, boolean toLog);
+	public ResultSet transactionBody(String type, int id, int value, int householdNum);
 	
 	public void endTransaction(int action);
 	
